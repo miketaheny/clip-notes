@@ -44,6 +44,7 @@ Update docs when any of these change:
 - Apple Notes helper commands, defaults, AppleScript behavior, or spacing normalization.
 - Media extraction behavior, output paths, dependency assumptions, or transcript cleaning.
 - Raindrop API helper commands, token environment variables, `.env` loading, collection defaults, or processing rules.
+- Recurring Codex automation prompts or Apple Shortcut handoff guidance.
 - Source-specific privacy or fallback rules.
 - Installation, packaging, release, or distribution process.
 - Security posture, local artifact handling, or Apple Notes account/folder assumptions.

@@ -1,7 +1,7 @@
 # 2026-06-17 — Add Raindrop Inbox API processing
 
 - Branch/worktree: `feature/raindrop-api-processing` / `/Users/taheny/vault/teamt/clip-notes`
-- Commit: `pending`
+- Commit: `2bb736b`
 - Goal: Review Raindrop.io Inbox bookmarks through the REST API, then move processed items to a Processed collection with the same canonical tags used in the Apple Note.
 - Files changed:
   - `.gitignore` and `.env.example` — add safe local token configuration with real `.env` files ignored.
@@ -9,7 +9,8 @@
   - `tests/test_raindrop_api.py` — adds offline tests for tag parsing, tag merging, and stable raindrop field extraction.
   - `SKILL.md` — documents the Raindrop Inbox workflow and the post-verification processing rule.
   - `references/source-strategies.md` — adds source-specific guidance for Raindrop Inbox items.
-  - `README.md` and `docs/*.md` — update setup, architecture, runbook, security, user guide, visual plan, and docs strategy for Raindrop API support.
+  - `README.md` and `docs/*.md` — update setup, architecture, runbook, security, user guide, visual plan, docs strategy, and recurring processing guidance for Raindrop API support.
+  - `references/share-workflows.md` — documents the Codex automation preference and Apple Shortcut status-check role.
 - Decisions:
   - Use the direct Raindrop.io REST API instead of MCP for free-account compatibility.
   - Auto-load `.env` when present, then read tokens from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`.

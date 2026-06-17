@@ -52,6 +52,8 @@ Recommended path:
 
 If the Processed collection has a different name or ID, configure `RAINDROP_PROCESSED_COLLECTION`.
 
+For recurring processing, prefer a Codex automation or scheduled Codex run over an Apple Shortcut. A Shortcut can check Inbox or trigger a reminder, but Codex should perform extraction, summarization, Apple Notes verification, and Raindrop post-processing.
+
 ## Practical Shortcut Fields
 
 For a future Apple Shortcut, pass these fields when available:

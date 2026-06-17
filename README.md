@@ -88,6 +88,8 @@ After a matching Apple Note is saved and verified, move a raindrop to Processed 
 python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
 ```
 
+Recommended recurring use: save links to Raindrop Inbox throughout the day, then have Codex process a small batch on demand or on a Codex recurring automation. Codex should create and verify each Apple Note before running the Raindrop `process` command.
+
 Run the current lightweight syntax check:
 
 ```bash

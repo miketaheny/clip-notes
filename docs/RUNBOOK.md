@@ -130,6 +130,32 @@ python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #referenc
 
 Use `--dry-run` to inspect the update body before moving the bookmark.
 
+## Recurring Processing
+
+Recommended operating model:
+
+1. Save candidate links to Raindrop Inbox throughout the day.
+2. Run a small Codex batch, such as 3-5 items, instead of processing a large backlog unattended.
+3. For each item, Codex extracts source content, writes the Apple Note, verifies the note, then moves the raindrop to Processed with the same canonical tags.
+4. If extraction, save, or verification fails, Codex leaves the item in Inbox and reports the blocker.
+
+Good Codex automation prompt:
+
+```text
+Use $clip-notes to review up to 5 items from Raindrop Inbox. For each item, extract available source content, create and verify an Apple Note in clip-notes, then move the Raindrop item to Processed with the same canonical tags. Leave any item in Inbox if source extraction, Apple Notes save, or verification fails, and report what blocked it.
+```
+
+Codex recurring automation is preferred over Apple Shortcuts for the full workflow because summarization, source fallback handling, Apple Notes verification, and Raindrop post-processing require agent judgment.
+
+Apple Shortcuts can still be useful as a light trigger or status check. A Shortcut can run:
+
+```bash
+cd /Users/taheny/vault/teamt/clip-notes
+python3 scripts/raindrop_api.py inbox --limit 5
+```
+
+Use Apple Shortcuts for intake/status; use Codex for processing.
+
 ## Validation
 
 Current lightweight validation:

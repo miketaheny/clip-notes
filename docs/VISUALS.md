@@ -36,6 +36,8 @@ A short demo can cover:
 
 Keep the demo under two minutes and use a non-sensitive public source.
 
+For recurring use, capture a second short demo that starts from a populated Raindrop Inbox, processes one item through Codex, then shows the item in Processed and the matching Apple Note.
+
 ## User Journey Diagram
 
 ```mermaid
