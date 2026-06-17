@@ -5,12 +5,24 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import re
 import subprocess
 import sys
 
 
 DEFAULT_ACCOUNT = "iCloud"
 DEFAULT_FOLDER = "clip-notes"
+SPACER = "<div><br></div>"
+SECTION_HEADING_RE = re.compile(
+    r'(<div><b>(?:<font face="\.AppleSystemUIFontBold">)?'
+    r'<span style="font-size: 18px">.*?</span>(?:</font>)?</b>(?:<br>)?</div>)'
+)
+NUMBERED_HEADING_RE = re.compile(
+    r'(<div><b>(?:<font face="\.AppleSystemUIFontBold">)?\d+\.[^<]*(?:</font>)?</b>(?:<br>)?</div>)'
+)
+METADATA_LABEL_RE = re.compile(
+    r"(?<!<br>)(<b>(?:Posted|Published|Length|Notes created|Lifecycle|Category|Tags|Revisit|Why keep this):</b>)"
+)
 
 
 def applescript_quote(value: str) -> str:
@@ -134,10 +146,75 @@ tell application "Notes"
         return "MISSING_FOLDER: " & {applescript_quote(folder)}
     end if
     set targetFolder to folder {applescript_quote(folder)} of targetAccount
-    return name of notes of targetFolder
+    set oldDelimiters to AppleScript's text item delimiters
+    set AppleScript's text item delimiters to linefeed
+    set noteNames to name of notes of targetFolder
+    set noteText to noteNames as text
+    set AppleScript's text item delimiters to oldDelimiters
+    return noteText
 end tell
 """
     return run_applescript(script)
+
+
+def get_note_body(account: str, folder: str, title: str) -> str:
+    script = f"""
+set noteTitle to {applescript_quote(title)}
+
+tell application "Notes"
+    set targetAccount to account {applescript_quote(account)}
+    set targetFolder to folder {applescript_quote(folder)} of targetAccount
+    return body of note noteTitle of targetFolder
+end tell
+"""
+    return run_applescript(script)
+
+
+def set_note_body(account: str, folder: str, title: str, html_body: str) -> str:
+    script = f"""
+set noteTitle to {applescript_quote(title)}
+set noteBody to {applescript_quote(html_body)}
+
+tell application "Notes"
+    set targetAccount to account {applescript_quote(account)}
+    set targetFolder to folder {applescript_quote(folder)} of targetAccount
+    set targetNote to note noteTitle of targetFolder
+    set body of targetNote to noteBody
+    return name of targetNote
+end tell
+"""
+    return run_applescript(script)
+
+
+def normalize_spacing(html_body: str) -> str:
+    body = html_body.strip()
+    body = METADATA_LABEL_RE.sub(r"<br>\1", body)
+    body = body.replace("<div><br><b>", "<div><b>")
+
+    body = re.sub(rf"(?:{re.escape(SPACER)}\s*)+(?={SECTION_HEADING_RE.pattern})", "", body)
+    body = SECTION_HEADING_RE.sub(lambda match: f"{SPACER}\n{match.group(1)}", body)
+
+    body = re.sub(rf"(?:{re.escape(SPACER)}\s*)+(?={NUMBERED_HEADING_RE.pattern})", "", body)
+    body = NUMBERED_HEADING_RE.sub(lambda match: f"{SPACER}\n{match.group(1)}", body)
+
+    body = re.sub(rf"(?:{re.escape(SPACER)}\s*){{2,}}", SPACER, body)
+    return body
+
+
+def restyle_note(account: str, folder: str, title: str) -> str:
+    body = get_note_body(account, folder, title)
+    restyled = normalize_spacing(body)
+    if restyled == body:
+        return f"UNCHANGED: {title}"
+    new_title = set_note_body(account, folder, title, restyled)
+    return f"RESTYLED: {new_title}"
+
+
+def restyle_folder(account: str, folder: str) -> str:
+    titles = [title for title in list_notes(account, folder).splitlines() if title.strip()]
+    if not titles:
+        return f"NO_NOTES: {folder}"
+    return "\n".join(restyle_note(account, folder, title) for title in titles)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -159,6 +236,9 @@ def build_parser() -> argparse.ArgumentParser:
     move_parser = subparsers.add_parser("move", help="Move matching note titles into the target folder.")
     move_parser.add_argument("--title", required=True, help="Exact note title.")
 
+    restyle_parser = subparsers.add_parser("restyle", help="Improve spacing in an existing note or all notes.")
+    restyle_parser.add_argument("--title", help="Exact note title. If omitted, restyles every note in the folder.")
+
     subparsers.add_parser("list", help="List note titles in the target folder.")
     return parser
 
@@ -173,6 +253,11 @@ def main() -> None:
         print(verify_note(args.account, args.folder, args.title))
     elif args.command == "move":
         print(move_note(args.account, args.folder, args.title))
+    elif args.command == "restyle":
+        if args.title:
+            print(restyle_note(args.account, args.folder, args.title))
+        else:
+            print(restyle_folder(args.account, args.folder))
     elif args.command == "list":
         print(list_notes(args.account, args.folder))
 

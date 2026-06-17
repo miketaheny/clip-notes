@@ -55,26 +55,31 @@ Use this structure by default. Omit irrelevant sections and add source-specific 
 <b>Revisit:</b> YYYY-MM-DD or none<br>
 <b>Why keep this:</b> One sentence explaining how this note may be useful later.</p>
 
+<p><br></p>
 <h2>TL;DR</h2>
 <ul>
 <li>Three to five bullets capturing the gist.</li>
 </ul>
 
+<p><br></p>
 <h2>Key Points</h2>
 <ul>
 <li>Important ideas, claims, lessons, or decisions.</li>
 </ul>
 
+<p><br></p>
 <h2>Details Worth Keeping</h2>
 <ul>
 <li>Specific examples, frameworks, numbers, names, and caveats.</li>
 </ul>
 
+<p><br></p>
 <h2>Action Items / Follow-up</h2>
 <ul>
 <li>Concrete next steps, questions to revisit, or things to try.</li>
 </ul>
 
+<p><br></p>
 <h2>Limitations</h2>
 <ul>
 <li>Call out if captions were automatic, content was paywalled, only a snippet was available, or any source detail was uncertain.</li>
@@ -87,6 +92,7 @@ Use this structure by default. Omit irrelevant sections and add source-specific 
 
 - Be faithful to the source. Separate source claims from your own synthesis.
 - Optimize for quick consumption. The user should not need to review the whole source to decide whether it matters.
+- Keep Apple Notes readable: separate metadata labels with line breaks and insert a blank paragraph before each major section heading.
 - Keep direct quotes short and only include them when they are memorable or decision-relevant.
 - Preserve useful timestamps for videos longer than a few minutes.
 - For emails and documents, keep names, deadlines, commitments, and requested actions explicit.
