@@ -1,0 +1,101 @@
+---
+name: clip-notes
+description: Summarize shared sources into Apple Notes. Use when the user provides or shares an article, Apple News link, X/Twitter post, YouTube/TikTok/social video, email, PDF, document, webpage, pasted text, or other saveable source and wants concise notes saved to Apple Notes. Create an Apple Note in the clip-notes folder with source metadata, TL;DR, key points, action items, useful quotes, and limitations. Do not use for unrelated note editing or for summarizing a source the user has not provided or authorized access to.
+---
+
+# Clip Notes
+
+Create concise, source-grounded notes from shareable content and save them to Apple Notes in the `clip-notes` folder.
+
+## Default Contract
+
+- Folder: `clip-notes` in the user's default Apple Notes account, usually `iCloud`.
+- Output: one Apple Note per source unless the user asks for a roundup.
+- Note format: HTML body saved through Notes AppleScript.
+- Verification: always confirm the target folder exists and read back the note title after saving.
+- Privacy: use local/shared content first. Do not broaden to internet search for private email, documents, or account-gated content unless the user explicitly asks.
+
+## Workflow
+
+1. Identify the source type: URL, video, social post, email, document, PDF, image, pasted text, or mixed bundle.
+2. Collect source metadata: title, author/source, date, URL or file name, duration/page count when available, and retrieval date.
+3. Extract content using the least invasive reliable method:
+   - For YouTube, TikTok, X video, and other supported video URLs, prefer available caption/subtitle tracks. Use `scripts/extract_media_captions.py` when `yt-dlp` is available.
+   - For webpages and Apple News links, use the page content when accessible. If the article is gated or blocked, ask the user to share the article text or Reader output instead of inventing details.
+   - For email, summarize only the message/thread content the user provided or that an authorized connector exposes.
+   - For local documents, use the appropriate document/PDF/spreadsheet parser or available Codex document skills.
+   - For images or screenshots, use OCR only when available; otherwise ask for text.
+4. Create a summary that is compact but useful. Do not include a raw transcript unless the user asks.
+5. Save the note with `scripts/save_to_apple_notes.py save --title "<title>" --html-file <file>`.
+6. Verify with `scripts/save_to_apple_notes.py verify --title "<title>"`.
+
+Read `references/source-strategies.md` when handling a source type with edge cases. Read `references/share-workflows.md` when the user asks how to use this from iOS, macOS, ChatGPT, or Codex.
+
+## Note Template
+
+Use this structure by default. Omit irrelevant sections and add source-specific sections when useful, such as timestamps for videos or sender/action ownership for emails.
+
+```html
+<html>
+<body>
+<h1>Clean Source Title</h1>
+<p><b>Source:</b> <a href="SOURCE_URL">SOURCE_URL</a><br>
+<b>Creator/Author:</b> AUTHOR_OR_SOURCE<br>
+<b>Date:</b> SOURCE_DATE<br>
+<b>Notes created:</b> YYYY-MM-DD</p>
+
+<h2>TL;DR</h2>
+<ul>
+<li>Three to five bullets capturing the gist.</li>
+</ul>
+
+<h2>Key Points</h2>
+<ul>
+<li>Important ideas, claims, lessons, or decisions.</li>
+</ul>
+
+<h2>Details Worth Keeping</h2>
+<ul>
+<li>Specific examples, frameworks, numbers, names, and caveats.</li>
+</ul>
+
+<h2>Action Items / Follow-up</h2>
+<ul>
+<li>Concrete next steps, questions to revisit, or things to try.</li>
+</ul>
+
+<h2>Limitations</h2>
+<ul>
+<li>Call out if captions were automatic, content was paywalled, only a snippet was available, or any source detail was uncertain.</li>
+</ul>
+</body>
+</html>
+```
+
+## Summary Standards
+
+- Be faithful to the source. Separate source claims from your own synthesis.
+- Keep direct quotes short and only include them when they are memorable or decision-relevant.
+- Preserve useful timestamps for videos longer than a few minutes.
+- For emails and documents, keep names, deadlines, commitments, and requested actions explicit.
+- For medical, legal, financial, or safety content, include a short caution and avoid overstating certainty.
+- If content extraction fails, save a note that includes the source link, what could not be accessed, and the exact next input needed.
+
+## Apple Notes Helpers
+
+Use the bundled helper from the skill directory:
+
+```bash
+python3 scripts/save_to_apple_notes.py ensure-folder
+python3 scripts/save_to_apple_notes.py save --title "Example - Clip Notes" --html-file /absolute/path/note.html
+python3 scripts/save_to_apple_notes.py verify --title "Example - Clip Notes"
+python3 scripts/save_to_apple_notes.py move --title "Existing note title"
+```
+
+Default options are `--account iCloud` and `--folder clip-notes`. Override them only when the user's Notes setup requires it.
+
+## Done Criteria
+
+- The note exists in Apple Notes under `clip-notes`.
+- The final response names the created note and mentions any extraction limitations.
+- If saving to Apple Notes was impossible, a user-facing HTML or Markdown note file exists and the final response explains the blocker.
