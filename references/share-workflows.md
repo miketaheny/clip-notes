@@ -41,6 +41,19 @@ Recommended path:
 2. Open Codex and invoke `$clip-notes` with that shared input.
 3. Let Codex extract, summarize, save, and verify in Apple Notes.
 
+## Raindrop.io Inbox
+
+Recommended path:
+
+1. Save candidate links to a Raindrop.io collection named `Inbox`, or configure `RAINDROP_INBOX_COLLECTION` with the collection name or ID.
+2. Copy `.env.example` to `.env` and set `RAINDROP_ACCESS_TOKEN`, or export `RAINDROP_ACCESS_TOKEN` / `RAINDROP_TOKEN` in the local shell environment.
+3. Ask Codex to use `$clip-notes` to review the Raindrop Inbox.
+4. Let Codex summarize one source, save and verify the Apple Note, then process the matching raindrop into `Processed` with the same canonical tags.
+
+If the Processed collection has a different name or ID, configure `RAINDROP_PROCESSED_COLLECTION`.
+
+For recurring processing, prefer a Codex automation or scheduled Codex run over an Apple Shortcut. A Shortcut can check Inbox or trigger a reminder, but Codex should perform extraction, summarization, Apple Notes verification, and Raindrop post-processing.
+
 ## Practical Shortcut Fields
 
 For a future Apple Shortcut, pass these fields when available:

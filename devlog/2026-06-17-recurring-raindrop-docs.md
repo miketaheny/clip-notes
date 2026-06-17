@@ -1,0 +1,25 @@
+# 2026-06-17 — Document recurring Raindrop review
+
+- Branch/worktree: `development` / `/Users/taheny/vault/teamt/clip-notes`
+- Commit: current docs commit
+- Goal: Document the operating model where the user saves items to Raindrop Inbox and Codex processes small batches into Apple Notes.
+- Files changed:
+  - `README.md` — adds the recommended recurring Raindrop Inbox usage model.
+  - `docs/RUNBOOK.md` — adds Codex automation prompt guidance and Apple Shortcut status-check guidance.
+  - `docs/USER-GUIDE.md` — adds a regular Inbox review workflow and ready-to-use request text.
+  - `docs/VISUALS.md` — adds a recurring-use demo recommendation.
+  - `docs/DOCS-STRATEGY.md` — adds recurring automation docs as a maintenance trigger.
+  - `references/share-workflows.md` — clarifies that Codex should run the full workflow while Apple Shortcuts can assist with intake/status.
+  - `devlog/2026-06-17-raindrop-api-processing.md` — records the implementation commit hash.
+- Decisions:
+  - Prefer Codex recurring automation for the full workflow because extraction, summarization, Apple Notes verification, and Raindrop post-processing require agent judgment.
+  - Keep Apple Shortcuts scoped to intake, reminders, or status checks.
+- Validation:
+  - `python3 -m py_compile scripts/*.py` — passed.
+  - `python3 -m unittest tests/test_raindrop_api.py` — passed, 6 tests.
+  - `git diff --check` — passed.
+  - `rg -n "[ \t]+$" README.md docs devlog references SKILL.md scripts tests .env.example .gitignore` — no trailing whitespace matches.
+- Review:
+  - Final docs and status review completed.
+- Follow-ups:
+  - Create a Codex automation once the desired cadence is chosen.

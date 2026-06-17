@@ -1,0 +1,29 @@
+# 2026-06-17 — Add Raindrop Inbox API processing
+
+- Branch/worktree: `feature/raindrop-api-processing` / `/Users/taheny/vault/teamt/clip-notes`
+- Commit: `2bb736b`
+- Goal: Review Raindrop.io Inbox bookmarks through the REST API, then move processed items to a Processed collection with the same canonical tags used in the Apple Note.
+- Files changed:
+  - `.gitignore` and `.env.example` — add safe local token configuration with real `.env` files ignored.
+  - `scripts/raindrop_api.py` — adds a stdlib-only Raindrop REST API helper for listing Inbox items and processing one raindrop after note verification.
+  - `tests/test_raindrop_api.py` — adds offline tests for tag parsing, tag merging, and stable raindrop field extraction.
+  - `SKILL.md` — documents the Raindrop Inbox workflow and the post-verification processing rule.
+  - `references/source-strategies.md` — adds source-specific guidance for Raindrop Inbox items.
+  - `README.md` and `docs/*.md` — update setup, architecture, runbook, security, user guide, visual plan, docs strategy, and recurring processing guidance for Raindrop API support.
+  - `references/share-workflows.md` — documents the Codex automation preference and Apple Shortcut status-check role.
+- Decisions:
+  - Use the direct Raindrop.io REST API instead of MCP for free-account compatibility.
+  - Auto-load `.env` when present, then read tokens from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`.
+  - Default to collections named `Inbox` and `Processed`, with collection name or ID overrides.
+  - Strip leading `#` from Apple Note hashtags by default when writing Raindrop tag names because Raindrop tags are plain labels.
+  - Refuse to process a raindrop that is not still in Inbox unless `--skip-inbox-check` is explicitly passed.
+- Validation:
+  - `python3 -m py_compile scripts/*.py` — passed.
+  - `python3 -m unittest tests/test_raindrop_api.py` — passed, 6 tests.
+  - `git diff --check` — passed for tracked-file diffs.
+  - `rg -n "[ \t]+$" README.md docs devlog SKILL.md references scripts tests` — no trailing whitespace matches.
+  - `python3 scripts/raindrop_api.py --help` — passed.
+- Review:
+  - Final focused script and docs review completed.
+- Follow-ups:
+  - Exercise the API helper against a real Raindrop token and non-sensitive test bookmark.
