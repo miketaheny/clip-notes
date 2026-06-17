@@ -77,20 +77,34 @@ For PDFs and documents, provide a local file path or the document content. Long 
 
 For Raindrop.io review, the skill lists bookmarks from the configured Inbox collection and Unsorted by default, uses the saved link as the source, creates and verifies the Apple Note, then moves the bookmark to the Processed collection with matching tag names. If the note cannot be saved or verified, the bookmark stays where it is.
 
+For backlog cleanup, the batch runner can create metadata-based notes directly from Raindrop title, excerpt, note, URL, domain, and saved date metadata:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
+```
+
+Use the batch runner when the goal is to make saved links searchable and clear the queue. Ask Codex for a smaller manual review when you need full article text, thread extraction, captions, or deeper synthesis.
+
 ## Regular Inbox Review
 
 The intended workflow is simple:
 
 1. Save links, videos, documents, or articles to Raindrop Inbox or leave them in Unsorted whenever you find them.
-2. Ask Codex to review a small batch from Raindrop Inbox and Unsorted.
-3. Codex creates Apple Notes for the useful content.
+2. Run the batch helper for metadata-based cleanup, or ask Codex to review a small batch for deeper extraction.
+3. Codex or the helper creates Apple Notes for the useful content.
 4. Successfully saved and verified items move to Processed with matching tags.
 5. Blocked items stay in their current review collection with an explanation.
 
-Use this request when you want Codex to run through the queue:
+Use this request when you want Codex to deeply review a few items:
 
 ```text
 Use $clip-notes to review up to 5 items from my Raindrop Inbox and Unsorted. Save each good summary to Apple Notes, verify it, then move the Raindrop item to Processed with the same tags.
+```
+
+Use this command when you want the queue cleaned up with metadata-based notes:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
 ```
 
 ## Good Requests

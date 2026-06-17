@@ -12,6 +12,7 @@ Clip Notes is a small local Agent Skill. The canonical behavior lives in `SKILL.
 | Apple Notes helper | `scripts/save_to_apple_notes.py` | Wraps AppleScript commands for folder creation, save, verify, move, list, and spacing restyle operations. |
 | Media captions helper | `scripts/extract_media_captions.py` | Uses `yt-dlp` to write media metadata and caption-derived transcripts under `work/clip-notes-media`. |
 | Raindrop API helper | `scripts/raindrop_api.py` | Uses the Raindrop.io REST API to list Inbox and Unsorted bookmarks and move processed bookmarks with matching note tags. |
+| Raindrop batch runner | `scripts/raindrop_clip_notes_batch.py` | Creates metadata-based Apple Notes for Raindrop review items, verifies notes by embedded Raindrop ID, then moves verified bookmarks to Processed with matching tags and rate-limit backoff. |
 | Agent display metadata | `agents/openai.yaml` | Provides display name, short description, and default prompt. |
 
 ## Source-to-Note Flow
@@ -32,6 +33,7 @@ flowchart TD
     Verify["scripts/save_to_apple_notes.py verify"]
     Notes["Apple Notes: iCloud / clip-notes"]
     Raindrop["Optional: scripts/raindrop_api.py process"]
+    Batch["Optional: scripts/raindrop_clip_notes_batch.py run"]
     Processed["Raindrop.io Processed collection"]
     Fallback["HTML or Markdown fallback artifact plus blocker explanation"]
 
@@ -44,6 +46,8 @@ flowchart TD
     Summarize --> Save --> Notes
     Save --> Verify --> Notes
     Verify --> Raindrop --> Processed
+    Batch --> Notes
+    Batch --> Processed
 ```
 
 ## Apple Notes Boundary
@@ -71,6 +75,8 @@ The default output directory is `work/clip-notes-media`, which is ignored by Git
 
 The helper defaults to review sources named `Inbox` and `Unsorted`, then moves completed items to `Processed`, with environment and CLI overrides for collection names or IDs. It does not call the Raindrop.io MCP endpoint.
 
+`scripts/raindrop_clip_notes_batch.py` builds on the same API boundary for queue cleanup. It fetches review items in pages of at most 50, creates Apple Notes from Raindrop metadata, verifies notes by looking for the embedded Raindrop ID in the note title or body, then updates only verified bookmarks. It sleeps between successful moves and retries HTTP 429 rate limits with backoff.
+
 ## Data and Trust Boundaries
 
 - User-provided private content should stay within the local agent context and Apple Notes output unless the user explicitly authorizes broader lookup.
@@ -83,7 +89,7 @@ The helper defaults to review sources named `Inbox` and `Unsorted`, then moves c
 
 - Additional source strategies can be added under `references/`.
 - More helper commands can be added to `scripts/save_to_apple_notes.py` if Apple Notes operations expand.
-- Additional Raindrop processing modes can be added to `scripts/raindrop_api.py` if future workflows need batch processing or collection-specific rules.
+- Additional Raindrop processing modes can be added to the batch runner if future workflows need richer extraction or collection-specific rules.
 - A packaging or installation script can be added if the current direct skill-directory use becomes insufficient.
 
 <!-- TODO: Confirm whether this repository should include a canonical `AGENT-FLOW.md` file or rely on external Agent-Flow instructions. -->

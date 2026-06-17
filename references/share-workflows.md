@@ -47,12 +47,13 @@ Recommended path:
 
 1. Save candidate links to a Raindrop.io collection named `Inbox`, leave them in Unsorted, or configure `RAINDROP_INBOX_COLLECTION` with another collection name or ID.
 2. Copy `.env.example` to `.env` and set `RAINDROP_ACCESS_TOKEN`, or export `RAINDROP_ACCESS_TOKEN` / `RAINDROP_TOKEN` in the local shell environment.
-3. Ask Codex to use `$clip-notes` to review Raindrop Inbox and Unsorted.
-4. Let Codex summarize one source, save and verify the Apple Note, then process the matching raindrop into `Processed` with the same canonical tags.
+3. Ask Codex to use `$clip-notes` to review a small number of items when deeper source extraction is needed.
+4. For metadata-based backlog cleanup, run `python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10`.
+5. Codex or the batch runner saves and verifies the Apple Note, then processes the matching raindrop into `Processed` with the same canonical tags.
 
 If the Processed collection has a different name or ID, configure `RAINDROP_PROCESSED_COLLECTION`.
 
-For recurring processing, prefer a Codex automation or scheduled Codex run over an Apple Shortcut. A Shortcut can check Inbox or trigger a reminder, but Codex should perform extraction, summarization, Apple Notes verification, and Raindrop post-processing.
+For recurring processing, prefer a Codex automation or scheduled Codex run over an Apple Shortcut. A Shortcut can check Inbox or trigger a reminder, but Codex should perform extraction, summarization, Apple Notes verification, and Raindrop post-processing. Use the batch runner for queue cleanup where Raindrop metadata is enough.
 
 ## Practical Shortcut Fields
 

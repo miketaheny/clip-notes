@@ -157,6 +157,36 @@ end tell
     return run_applescript(script)
 
 
+def find_note_by_raindrop_id(account: str, folder: str, raindrop_id: int) -> str:
+    rd_id = str(raindrop_id)
+    script = f"""
+set rdId to {applescript_quote(rd_id)}
+set titleNeedle to "RD " & rdId
+set bracketNeedle to "[RD " & rdId & "]"
+set bodyNeedle to "Raindrop ID: " & rdId
+
+tell application "Notes"
+    set targetAccount to account {applescript_quote(account)}
+    if not (exists folder {applescript_quote(folder)} of targetAccount) then
+        return "MISSING_FOLDER: " & {applescript_quote(folder)}
+    end if
+    set targetFolder to folder {applescript_quote(folder)} of targetAccount
+    repeat with targetNote in notes of targetFolder
+        set noteName to name of targetNote as text
+        if noteName contains titleNeedle or noteName contains bracketNeedle then
+            return "FOUND: " & noteName
+        end if
+        set noteBody to body of targetNote as text
+        if noteBody contains bodyNeedle or noteBody contains titleNeedle or noteBody contains bracketNeedle then
+            return "FOUND: " & noteName
+        end if
+    end repeat
+    return "MISSING: " & rdId
+end tell
+"""
+    return run_applescript(script)
+
+
 def get_note_body(account: str, folder: str, title: str) -> str:
     script = f"""
 set noteTitle to {applescript_quote(title)}
@@ -239,6 +269,9 @@ def build_parser() -> argparse.ArgumentParser:
     restyle_parser = subparsers.add_parser("restyle", help="Improve spacing in an existing note or all notes.")
     restyle_parser.add_argument("--title", help="Exact note title. If omitted, restyles every note in the folder.")
 
+    find_rd_parser = subparsers.add_parser("find-rd", help="Find a note by embedded Raindrop ID.")
+    find_rd_parser.add_argument("--id", type=int, required=True, help="Raindrop ID to find in note title or body.")
+
     subparsers.add_parser("list", help="List note titles in the target folder.")
     return parser
 
@@ -258,6 +291,8 @@ def main() -> None:
             print(restyle_note(args.account, args.folder, args.title))
         else:
             print(restyle_folder(args.account, args.folder))
+    elif args.command == "find-rd":
+        print(find_note_by_raindrop_id(args.account, args.folder, args.id))
     elif args.command == "list":
         print(list_notes(args.account, args.folder))
 

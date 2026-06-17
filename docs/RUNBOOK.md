@@ -131,20 +131,35 @@ python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #referenc
 
 Use `--dry-run` to inspect the update body before moving the bookmark.
 
+For backlog processing, use the batch runner. It creates a compact Apple Note from Raindrop metadata, verifies the note by embedded Raindrop ID, then moves only verified items to Processed:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --max-items 25 --sleep 10
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
+```
+
+`--batch-size` defaults to 50 because that is the helper's Raindrop page size. `--sleep` spaces out successful moves, and `--retry-sleep` / `--max-retries` control HTTP 429 backoff. Each run writes HTML note files and `summary.json` under `work/raindrop-clip-notes/`.
+
 ## Recurring Processing
 
 Recommended operating model:
 
 1. Save candidate links to Raindrop Inbox throughout the day.
 2. Leave uncategorized links in Raindrop Unsorted when that is faster than choosing Inbox.
-3. Run a small Codex batch, such as 3-5 items, instead of processing a large backlog unattended.
-4. For each item, Codex extracts source content, writes the Apple Note, verifies the note, then moves the raindrop to Processed with the same canonical tags.
+3. Run `scripts/raindrop_clip_notes_batch.py` for metadata-based queue cleanup, or ask Codex for a smaller deep-extraction batch when source content needs review.
+4. For each item, Codex or the batch runner writes the Apple Note, verifies the note, then moves the raindrop to Processed with the same canonical tags.
 5. If extraction, save, or verification fails, Codex leaves the item in its current review collection and reports the blocker.
 
 Good Codex automation prompt:
 
 ```text
 Use $clip-notes to review up to 5 items from Raindrop Inbox and Unsorted. For each item, extract available source content, create and verify an Apple Note in clip-notes, then move the Raindrop item to Processed with the same canonical tags. Leave any item in its current review collection if source extraction, Apple Notes save, or verification fails, and report what blocked it.
+```
+
+Good backlog command:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
 ```
 
 Codex recurring automation is preferred over Apple Shortcuts for the full workflow because summarization, source fallback handling, Apple Notes verification, and Raindrop post-processing require agent judgment.
@@ -165,6 +180,7 @@ Current lightweight validation:
 ```bash
 python3 -m py_compile scripts/*.py
 python3 -m unittest tests/test_raindrop_api.py
+python3 -m unittest tests/test_raindrop_clip_notes_batch.py
 ```
 
 Before changing behavior, also manually inspect:
@@ -187,6 +203,7 @@ Before changing behavior, also manually inspect:
 | Missing Raindrop API token | `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN` is unset. | Add it to `.env` or export it from the shell. |
 | `Collection 'Inbox' not found` | Intake collection is named differently. | The helper still includes Unsorted by default; pass `--inbox <name-or-id>` or set `RAINDROP_INBOX_COLLECTION` to include a named collection. |
 | Raindrop is not in a review collection | The item was already moved or the wrong ID was supplied. | Confirm the ID; use `--skip-inbox-check` only intentionally. |
+| HTTP 429 from Raindrop | The API temporarily rate-limited requests. | Increase `--sleep`, increase `--retry-sleep`, or rerun the batch; verified notes are detected by Raindrop ID to avoid duplicate processing. |
 
 ## Rollback
 

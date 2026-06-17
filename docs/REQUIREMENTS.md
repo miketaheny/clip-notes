@@ -21,6 +21,8 @@ This document describes observed behavior from `SKILL.md`, `references/`, and he
 - The Raindrop helper must support disabling Unsorted review with `RAINDROP_INCLUDE_UNSORTED=false` or `--no-unsorted`.
 - After an Apple Note created from a Raindrop Inbox or Unsorted item is saved and verified, the helper must move that raindrop to the configured Processed collection and apply the same canonical tag names as the Apple Note.
 - The Raindrop helper must leave a raindrop in its current review collection if the Apple Note save or verification fails.
+- `scripts/raindrop_clip_notes_batch.py` must support processing one bounded batch or all available Inbox/Unsorted items by creating metadata-based Apple Notes, verifying notes by Raindrop ID, and moving only verified raindrops.
+- The batch runner must keep API fetch pages at 50 items or fewer and retry Raindrop HTTP 429 responses with backoff.
 - After saving, the agent must verify the note title in the target Apple Notes folder.
 - If saving to Apple Notes fails, the agent must leave a user-facing HTML or Markdown note artifact and explain the blocker.
 
@@ -36,7 +38,7 @@ This document describes observed behavior from `SKILL.md`, `references/`, and he
 
 ## Current Constraints
 
-- The repository has no automated unit test suite.
+- The repository has lightweight unit tests for Raindrop helper parsing and batch-runner pure logic.
 - Apple Notes behavior depends on macOS Notes, account names, folder names, and local automation permissions.
 - Media extraction depends on a user-installed `yt-dlp`.
 - Raindrop Inbox and Unsorted processing depends on a user-provided Raindrop.io API token and collection names or IDs.

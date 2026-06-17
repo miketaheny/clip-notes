@@ -9,6 +9,7 @@ Clip Notes processes user-provided or user-authorized sources and writes summari
 - `scripts/save_to_apple_notes.py` controls Apple Notes through local `osascript`.
 - `scripts/extract_media_captions.py` delegates media metadata and caption extraction to `yt-dlp`.
 - `scripts/raindrop_api.py` delegates bookmark listing and updates to the Raindrop.io REST API using a bearer token.
+- `scripts/raindrop_clip_notes_batch.py` combines local Apple Notes writes with Raindrop bookmark updates after verification.
 - Apple Notes stores the final note in the user's configured Notes account.
 
 ## Privacy Rules
@@ -57,6 +58,8 @@ When using `yt-dlp`:
 
 `scripts/raindrop_api.py` auto-loads `.env` when present, reads `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`, lists bookmarks from the configured Inbox collection, and moves a processed bookmark to the configured Processed collection after Apple Notes verification.
 
+`scripts/raindrop_clip_notes_batch.py` uses the same token and collection settings for queue cleanup. It writes metadata-based HTML note drafts and `summary.json` under `work/raindrop-clip-notes/`, verifies saved notes by embedded Raindrop ID, then moves only verified bookmarks. It fetches API pages in batches of at most 50 and retries HTTP 429 responses with backoff.
+
 Security expectations:
 
 - Store tokens in `.env`, the shell environment, or a local secret manager.
@@ -65,6 +68,7 @@ Security expectations:
 - Use `--dry-run` before processing if the collection or tag mapping is uncertain.
 - Do not process a Raindrop item until the Apple Note save and verify steps have succeeded.
 - Leading `#` is stripped from Apple Note hashtags by default before writing Raindrop tag names.
+- Treat batch summaries and generated HTML drafts as private source metadata even though `work/` is ignored by Git.
 
 ## Reporting and Ownership
 

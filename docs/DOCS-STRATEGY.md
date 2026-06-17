@@ -43,7 +43,7 @@ Update docs when any of these change:
 - Skill invocation rules, note template, lifecycle values, categories, tags, or done criteria.
 - Apple Notes helper commands, defaults, AppleScript behavior, or spacing normalization.
 - Media extraction behavior, output paths, dependency assumptions, or transcript cleaning.
-- Raindrop API helper commands, token environment variables, `.env` loading, collection defaults, Unsorted inclusion, or processing rules.
+- Raindrop API and batch helper commands, token environment variables, `.env` loading, collection defaults, Unsorted inclusion, rate-limit handling, or processing rules.
 - Recurring Codex automation prompts or Apple Shortcut handoff guidance.
 - Source-specific privacy or fallback rules.
 - Installation, packaging, release, or distribution process.
@@ -58,11 +58,13 @@ For docs-only changes:
 - Confirm Mermaid diagrams are syntactically plausible by inspection or rendering when a renderer is available.
 - Run `python3 -m py_compile scripts/*.py` if script behavior is referenced or nearby files changed.
 - Run `python3 -m unittest tests/test_raindrop_api.py` if Raindrop tag parsing or processing behavior is changed.
+- Run `python3 -m unittest tests/test_raindrop_clip_notes_batch.py` if Raindrop batch runner behavior is changed.
 
 For behavior changes:
 
 - Run `python3 -m py_compile scripts/*.py`.
 - Run Raindrop helper unit tests when `scripts/raindrop_api.py` changes.
+- Run batch runner unit tests when `scripts/raindrop_clip_notes_batch.py` changes.
 - Exercise the affected helper command when local Apple Notes or `yt-dlp` access makes it safe.
 - Update `docs/RUNBOOK.md`, `docs/REQUIREMENTS.md`, and `docs/SECURITY.md` as needed.
 

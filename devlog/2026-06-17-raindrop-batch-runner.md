@@ -1,0 +1,25 @@
+# 2026-06-17 — Add Raindrop batch runner
+
+- Branch/worktree: `feat/raindrop-batch-runner` / `/Users/taheny/vault/teamt/clip-notes-raindrop-batch`
+- Commit: `feat: add Raindrop batch runner`
+- Goal: Process Raindrop Inbox and Unsorted backlogs without the manual 50-item loop by creating verified Apple Notes before moving bookmarks to Processed.
+- Files changed:
+  - `scripts/raindrop_clip_notes_batch.py` — adds a batch runner for metadata-based Apple Notes, Raindrop ID verification, Processed moves, and HTTP 429 backoff.
+  - `scripts/save_to_apple_notes.py` — adds `find-rd` to verify notes by embedded Raindrop ID in the note title or body.
+  - `tests/test_raindrop_clip_notes_batch.py` — adds offline coverage for batch title generation, classification, and finder parsing.
+  - `README.md`, `SKILL.md`, `docs/*.md`, and `references/share-workflows.md` — document the batch runner, run commands, validation, security posture, and recurring queue cleanup workflow.
+- Decisions:
+  - Keep `scripts/raindrop_api.py` as the low-level API helper and put Apple Notes orchestration in a separate batch runner.
+  - Keep Raindrop API fetch pages at 50 and use `--sleep`, `--retry-sleep`, and `--max-retries` to handle rate limits.
+  - Generate metadata-based notes from Raindrop title, excerpt, note, URL, domain, and saved date; use the manual per-source workflow when deeper extraction is required.
+  - Verify Apple Notes by Raindrop ID rather than exact title because Apple Notes can shorten long titles.
+- Validation:
+  - `python3 -m py_compile scripts/*.py` — passed.
+  - `python3 -m unittest tests/test_raindrop_api.py tests/test_raindrop_clip_notes_batch.py` — passed, 14 tests.
+  - `git diff --check` — passed.
+  - `python3 scripts/raindrop_clip_notes_batch.py --env-file /Users/taheny/vault/teamt/clip-notes/.env run --max-items 1 --sleep 0 --dry-run` — passed.
+  - `python3 scripts/save_to_apple_notes.py find-rd --id 1727725476` — passed.
+- Review:
+  - Focused diff review completed; fixed per-item Apple Notes `SystemExit` handling so one Notes failure does not abort the whole batch.
+- Follow-ups:
+  - Merge to `development`, then run the batch runner live against the remaining Raindrop queue.

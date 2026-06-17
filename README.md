@@ -12,6 +12,7 @@ The skill is local-first. It summarizes content the user provided or authorized,
 | `scripts/save_to_apple_notes.py` | Apple Notes helper for creating folders, saving notes, verifying notes, moving notes, listing notes, and normalizing note spacing. |
 | `scripts/extract_media_captions.py` | Optional `yt-dlp` wrapper for video/social metadata and caption extraction. |
 | `scripts/raindrop_api.py` | Raindrop.io REST API helper for reviewing Inbox bookmarks and moving processed bookmarks to a Processed collection with matching note tags. |
+| `scripts/raindrop_clip_notes_batch.py` | Batch runner that turns Raindrop Inbox and Unsorted items into verified Apple Notes, then moves them to Processed with matching tags. |
 | `references/source-strategies.md` | Edge-case guidance for videos, articles, social posts, email, documents, and extraction failures. |
 | `references/share-workflows.md` | Usage guidance for Codex on macOS, ChatGPT, iOS Share Sheet, and macOS Share Sheet flows. |
 | `agents/openai.yaml` | Agent-facing display metadata. |
@@ -88,13 +89,23 @@ After a matching Apple Note is saved and verified, move a raindrop to Processed 
 python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
 ```
 
-Recommended recurring use: save links to Raindrop Inbox or leave them in Unsorted throughout the day, then have Codex process a small batch on demand or on a Codex recurring automation. Codex should create and verify each Apple Note before running the Raindrop `process` command.
+Run a batch that creates metadata-based Apple Notes, verifies each note by embedded Raindrop ID, then moves verified raindrops to Processed:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --max-items 25 --sleep 10
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
+```
+
+The batch runner keeps each Raindrop API page at 50 items, sleeps between successful moves, backs off and retries on HTTP 429 rate limits, and writes a run summary under `work/raindrop-clip-notes/`.
+
+Recommended recurring use: save links to Raindrop Inbox or leave them in Unsorted throughout the day, then have Codex run `raindrop_clip_notes_batch.py` on demand or through a Codex recurring automation. The batch runner creates and verifies each Apple Note before moving the Raindrop item.
 
 Run the current lightweight syntax check:
 
 ```bash
 python3 -m py_compile scripts/*.py
 python3 -m unittest tests/test_raindrop_api.py
+python3 -m unittest tests/test_raindrop_clip_notes_batch.py
 ```
 
 ## Skill Workflow

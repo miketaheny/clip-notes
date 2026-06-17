@@ -67,6 +67,15 @@ By default, leading `#` is stripped when writing Raindrop tag names because Rain
 
 Do not move or tag the raindrop if the Apple Note save or verification step fails. Leave it in Inbox and explain the blocker.
 
+For unattended metadata-based backlog processing, use the batch runner. It creates a compact Apple Note from Raindrop title, excerpt, note, URL, domain, and saved date metadata, verifies the note by embedded Raindrop ID, then moves only verified items to Processed:
+
+```bash
+python3 scripts/raindrop_clip_notes_batch.py run --max-items 25 --sleep 10
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
+```
+
+The batch runner keeps Raindrop API pages at 50 items, sleeps between successful moves, retries HTTP 429 rate limits with backoff, and writes per-run HTML notes plus `summary.json` under `work/raindrop-clip-notes/`. Use it when the user asks to run through a queue or backlog and accepts metadata-based notes. Use the normal per-source workflow when deeper extraction is required.
+
 ## Note Template
 
 Use this structure by default. Omit irrelevant sections and add source-specific sections when useful, such as timestamps for videos or sender/action ownership for emails.
@@ -148,6 +157,7 @@ Use the bundled helper from the skill directory:
 python3 scripts/save_to_apple_notes.py ensure-folder
 python3 scripts/save_to_apple_notes.py save --title "Example - Clip Notes" --html-file /absolute/path/note.html
 python3 scripts/save_to_apple_notes.py verify --title "Example - Clip Notes"
+python3 scripts/save_to_apple_notes.py find-rd --id 12345
 python3 scripts/save_to_apple_notes.py move --title "Existing note title"
 ```
 
@@ -161,6 +171,7 @@ Use the bundled helper from the skill directory:
 python3 scripts/raindrop_api.py collections
 python3 scripts/raindrop_api.py inbox --limit 5
 python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
+python3 scripts/raindrop_clip_notes_batch.py run --all --sleep 10
 ```
 
 The helper uses the official REST API endpoint `https://api.raindrop.io/rest/v1` with a bearer token. It does not use Raindrop.io MCP.
