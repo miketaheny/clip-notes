@@ -40,6 +40,15 @@ def env_token() -> str | None:
     return None
 
 
+def normalize_token(value: str | None) -> str | None:
+    if value is None:
+        return None
+    token = value.strip()
+    if token.casefold().startswith("bearer "):
+        token = token[7:].strip()
+    return token or None
+
+
 def parse_env_line(line: str) -> tuple[str, str] | None:
     stripped = line.strip()
     if not stripped or stripped.startswith("#"):
@@ -310,7 +319,7 @@ class RaindropClient:
 
 
 def build_client(args: argparse.Namespace) -> RaindropClient:
-    token = args.token or env_token()
+    token = normalize_token(args.token or env_token())
     if not token:
         raise RaindropApiError(
             "Missing Raindrop API token. Set RAINDROP_ACCESS_TOKEN or RAINDROP_TOKEN."

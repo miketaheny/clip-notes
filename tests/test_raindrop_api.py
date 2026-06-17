@@ -19,6 +19,12 @@ class RaindropApiTests(unittest.TestCase):
             ["clip-notes", "reference", "ai", "product"],
         )
 
+    def test_normalize_token_accepts_raw_or_bearer_values(self):
+        self.assertEqual(raindrop_api.normalize_token("abc123"), "abc123")
+        self.assertEqual(raindrop_api.normalize_token("Bearer abc123"), "abc123")
+        self.assertEqual(raindrop_api.normalize_token(" bearer abc123 "), "abc123")
+        self.assertIsNone(raindrop_api.normalize_token(" "))
+
     def test_parse_tags_can_keep_hash_prefix(self):
         self.assertEqual(
             raindrop_api.parse_tags(["#clip-notes #reference"], keep_hash=True),
