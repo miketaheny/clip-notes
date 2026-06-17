@@ -1,4 +1,4 @@
 interface:
   display_name: "Clip Notes"
-  short_description: "Summarize shared sources into Apple Notes"
-  default_prompt: "Use $clip-notes to turn this shared link, post, video, email, or document into a concise Apple Note."
+  short_description: "Save tagged source summaries to Apple Notes"
+  default_prompt: "Use $clip-notes to turn this shared link, post, video, email, or document into a concise, tagged Apple Note."
