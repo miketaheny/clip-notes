@@ -15,6 +15,7 @@ Create concise, source-grounded notes from shareable content and save them to Ap
 - Searchability: include a metadata block with lifecycle, category, tags, and a short "why keep this" reason.
 - Verification: always confirm the target folder exists and read back the note title after saving.
 - Privacy: use local/shared content first. Do not broaden to internet search for private email, documents, or account-gated content unless the user explicitly asks.
+- Raindrop Inbox: when reviewing a Raindrop.io Inbox bookmark, move it to the processed collection and apply the same note tag names only after the Apple Note has been saved and verified.
 
 ## Workflow
 
@@ -34,8 +35,37 @@ Create concise, source-grounded notes from shareable content and save them to Ap
 5. Create a summary that is compact but useful. Do not include a raw transcript unless the user asks.
 6. Save the note with `scripts/save_to_apple_notes.py save --title "<title>" --html-file <file>`.
 7. Verify with `scripts/save_to_apple_notes.py verify --title "<title>"`.
+8. If the source was reviewed from Raindrop.io Inbox, process it with `scripts/raindrop_api.py process` using the same lifecycle/category/topic tags from the Apple Note.
 
 Read `references/source-strategies.md` when handling a source type with edge cases. Read `references/share-workflows.md` when the user asks how to use this from iOS, macOS, ChatGPT, or Codex.
+
+## Raindrop Inbox Workflow
+
+Use the direct Raindrop.io REST API for free-account compatible Inbox review. The helper auto-loads `.env` when present, then reads the API token from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`. It defaults to collections named `Inbox` and `Processed`; override with `RAINDROP_INBOX_COLLECTION`, `RAINDROP_PROCESSED_COLLECTION`, `--inbox`, or `--processed`. Collection IDs are accepted, so `--inbox -1` can be used if the user's intake flow uses Raindrop's Unsorted system collection.
+
+List Inbox candidates:
+
+```bash
+python3 scripts/raindrop_api.py inbox --limit 5
+```
+
+Use each raindrop's link, title, excerpt, note, and existing tags as source metadata. Extract the linked source content using the normal source strategies. If the source is gated or inaccessible, save a limitation note instead of fabricating details.
+
+After the Apple Note is saved and verified, move the raindrop to the processed collection and apply the same canonical note tags:
+
+```bash
+python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #category-tag #topic-tag"
+```
+
+If the processed collection does not exist and the user wants the helper to create it, pass `--create-processed`:
+
+```bash
+python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #category-tag #topic-tag" --create-processed
+```
+
+By default, leading `#` is stripped when writing Raindrop tag names because Raindrop.io tags are plain labels. Use `--keep-hash-tags` only when the user explicitly wants the literal hash prefix in Raindrop.
+
+Do not move or tag the raindrop if the Apple Note save or verification step fails. Leave it in Inbox and explain the blocker.
 
 ## Note Template
 
@@ -123,8 +153,23 @@ python3 scripts/save_to_apple_notes.py move --title "Existing note title"
 
 Default options are `--account iCloud` and `--folder clip-notes`. Override them only when the user's Notes setup requires it.
 
+## Raindrop.io Helper
+
+Use the bundled helper from the skill directory:
+
+```bash
+python3 scripts/raindrop_api.py collections
+python3 scripts/raindrop_api.py inbox --limit 5
+python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
+```
+
+The helper uses the official REST API endpoint `https://api.raindrop.io/rest/v1` with a bearer token. It does not use Raindrop.io MCP.
+
+For local setup, copy `.env.example` to `.env` and fill `RAINDROP_ACCESS_TOKEN`. The real `.env` file is ignored by Git.
+
 ## Done Criteria
 
 - The note exists in Apple Notes under `clip-notes`.
 - The final response names the created note and mentions any extraction limitations.
+- For Raindrop Inbox sources, the raindrop is moved to the processed collection and tagged with the same canonical tags as the Apple Note, or it is explicitly left in Inbox because saving or verification failed.
 - If saving to Apple Notes was impossible, a user-facing HTML or Markdown note file exists and the final response explains the blocker.
