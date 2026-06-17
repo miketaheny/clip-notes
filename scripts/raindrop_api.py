@@ -170,6 +170,18 @@ def collection_summary(collection: dict[str, Any]) -> dict[str, Any]:
     return {"id": collection.get("_id"), "title": collection.get("title")}
 
 
+def dedupe_collections(collections: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[Any] = set()
+    result: list[dict[str, Any]] = []
+    for collection in collections:
+        collection_id = collection.get("_id")
+        if collection_id in seen:
+            continue
+        seen.add(collection_id)
+        result.append(collection)
+    return result
+
+
 def combine_raindrops(
     batches: list[list[dict[str, Any]]],
     *,
@@ -249,7 +261,7 @@ class RaindropClient:
     def collections(self) -> list[dict[str, Any]]:
         root = self.request("GET", "collections").get("items") or []
         child = self.request("GET", "collections/childrens").get("items") or []
-        return [*root, *child]
+        return dedupe_collections([*root, *child])
 
     def create_collection(self, title: str) -> dict[str, Any]:
         payload = self.request("POST", "collection", body={"title": title})

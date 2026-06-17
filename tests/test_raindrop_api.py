@@ -57,6 +57,19 @@ class RaindropApiTests(unittest.TestCase):
             {"_id": -1, "title": "Unsorted"},
         )
 
+    def test_dedupe_collections_removes_duplicate_ids(self):
+        collections = raindrop_api.dedupe_collections(
+            [
+                {"_id": 72092139, "title": "Processed"},
+                {"_id": 72090604, "title": "Inbox"},
+                {"_id": 72092139, "title": "Processed"},
+            ]
+        )
+        self.assertEqual(
+            [collection["_id"] for collection in collections],
+            [72092139, 72090604],
+        )
+
     def test_combine_raindrops_dedupes_sorts_and_limits(self):
         combined = raindrop_api.combine_raindrops(
             [
