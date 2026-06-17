@@ -35,6 +35,7 @@ Edit `.env`:
 RAINDROP_ACCESS_TOKEN=...
 RAINDROP_INBOX_COLLECTION=Inbox
 RAINDROP_PROCESSED_COLLECTION=Processed
+RAINDROP_INCLUDE_UNSORTED=true
 ```
 
 The Raindrop helper auto-loads `.env` by default. Existing shell environment variables take precedence over values in `.env`.
@@ -96,7 +97,7 @@ transcript=/absolute/path/work/clip-notes-media/transcript.txt
 
 If no captions are available, the command still writes metadata when `yt-dlp` can read the URL.
 
-## Process Raindrop Inbox Items
+## Process Raindrop Inbox and Unsorted Items
 
 List available collections when you need IDs or want to confirm names:
 
@@ -104,19 +105,19 @@ List available collections when you need IDs or want to confirm names:
 python3 scripts/raindrop_api.py collections
 ```
 
-List Inbox candidates:
+List Inbox and Unsorted candidates:
 
 ```bash
 python3 scripts/raindrop_api.py inbox --limit 5
 ```
 
-If the intake collection is Raindrop's Unsorted system collection, use:
+Unsorted is included by default. To list only the configured Inbox collection, use:
 
 ```bash
-python3 scripts/raindrop_api.py inbox --inbox -1 --limit 5
+python3 scripts/raindrop_api.py inbox --limit 5 --no-unsorted
 ```
 
-After creating and verifying the Apple Note, process the matching raindrop:
+After creating and verifying the Apple Note, process the matching raindrop from Inbox or Unsorted:
 
 ```bash
 python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
@@ -135,14 +136,15 @@ Use `--dry-run` to inspect the update body before moving the bookmark.
 Recommended operating model:
 
 1. Save candidate links to Raindrop Inbox throughout the day.
-2. Run a small Codex batch, such as 3-5 items, instead of processing a large backlog unattended.
-3. For each item, Codex extracts source content, writes the Apple Note, verifies the note, then moves the raindrop to Processed with the same canonical tags.
-4. If extraction, save, or verification fails, Codex leaves the item in Inbox and reports the blocker.
+2. Leave uncategorized links in Raindrop Unsorted when that is faster than choosing Inbox.
+3. Run a small Codex batch, such as 3-5 items, instead of processing a large backlog unattended.
+4. For each item, Codex extracts source content, writes the Apple Note, verifies the note, then moves the raindrop to Processed with the same canonical tags.
+5. If extraction, save, or verification fails, Codex leaves the item in its current review collection and reports the blocker.
 
 Good Codex automation prompt:
 
 ```text
-Use $clip-notes to review up to 5 items from Raindrop Inbox. For each item, extract available source content, create and verify an Apple Note in clip-notes, then move the Raindrop item to Processed with the same canonical tags. Leave any item in Inbox if source extraction, Apple Notes save, or verification fails, and report what blocked it.
+Use $clip-notes to review up to 5 items from Raindrop Inbox and Unsorted. For each item, extract available source content, create and verify an Apple Note in clip-notes, then move the Raindrop item to Processed with the same canonical tags. Leave any item in its current review collection if source extraction, Apple Notes save, or verification fails, and report what blocked it.
 ```
 
 Codex recurring automation is preferred over Apple Shortcuts for the full workflow because summarization, source fallback handling, Apple Notes verification, and Raindrop post-processing require agent judgment.
@@ -183,8 +185,8 @@ Before changing behavior, also manually inspect:
 | Empty caption output | Source has no captions or captions are unavailable to `yt-dlp`. | Use metadata, description, or ask for transcript/source text. |
 | Gated article has only preview text | Source is blocked. | Ask for full article text, Reader output, PDF, or screenshots. |
 | Missing Raindrop API token | `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN` is unset. | Add it to `.env` or export it from the shell. |
-| `Collection 'Inbox' not found` | Intake collection is named differently or uses Unsorted. | Pass `--inbox <name-or-id>` or set `RAINDROP_INBOX_COLLECTION`. |
-| Raindrop is not in Inbox | The item was already moved or the wrong ID was supplied. | Confirm the ID; use `--skip-inbox-check` only intentionally. |
+| `Collection 'Inbox' not found` | Intake collection is named differently. | The helper still includes Unsorted by default; pass `--inbox <name-or-id>` or set `RAINDROP_INBOX_COLLECTION` to include a named collection. |
+| Raindrop is not in a review collection | The item was already moved or the wrong ID was supplied. | Confirm the ID; use `--skip-inbox-check` only intentionally. |
 
 ## Rollback
 

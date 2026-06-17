@@ -17,9 +17,10 @@ This document describes observed behavior from `SKILL.md`, `references/`, and he
 - `scripts/save_to_apple_notes.py` must support folder creation, save, verify, move, list, and restyle operations.
 - `scripts/raindrop_api.py` must use the Raindrop.io REST API with `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`.
 - `scripts/raindrop_api.py` must auto-load `.env` by default when the file exists, while allowing real environment variables to take precedence.
-- The Raindrop helper must list bookmarks from the configured Inbox collection.
-- After an Apple Note created from a Raindrop Inbox item is saved and verified, the helper must move that raindrop to the configured Processed collection and apply the same canonical tag names as the Apple Note.
-- The Raindrop helper must leave a raindrop in Inbox if the Apple Note save or verification fails.
+- The Raindrop helper must list bookmarks from the configured Inbox collection and Raindrop's Unsorted system collection by default.
+- The Raindrop helper must support disabling Unsorted review with `RAINDROP_INCLUDE_UNSORTED=false` or `--no-unsorted`.
+- After an Apple Note created from a Raindrop Inbox or Unsorted item is saved and verified, the helper must move that raindrop to the configured Processed collection and apply the same canonical tag names as the Apple Note.
+- The Raindrop helper must leave a raindrop in its current review collection if the Apple Note save or verification fails.
 - After saving, the agent must verify the note title in the target Apple Notes folder.
 - If saving to Apple Notes fails, the agent must leave a user-facing HTML or Markdown note artifact and explain the blocker.
 
@@ -38,7 +39,7 @@ This document describes observed behavior from `SKILL.md`, `references/`, and he
 - The repository has no automated unit test suite.
 - Apple Notes behavior depends on macOS Notes, account names, folder names, and local automation permissions.
 - Media extraction depends on a user-installed `yt-dlp`.
-- Raindrop Inbox processing depends on a user-provided Raindrop.io API token and collection names or IDs.
+- Raindrop Inbox and Unsorted processing depends on a user-provided Raindrop.io API token and collection names or IDs.
 - Real `.env` files must remain ignored by Git; `.env.example` is the committed template.
 - `work/`, `outputs/`, `dist/`, and Python bytecode are ignored by Git, but local extraction artifacts can still contain source content.
 - There is no visible release script or package manifest in the repository.

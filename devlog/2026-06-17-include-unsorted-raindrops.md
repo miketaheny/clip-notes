@@ -1,0 +1,25 @@
+# 2026-06-17 — Include Unsorted Raindrops
+
+- Branch/worktree: `feature/include-unsorted-raindrops` / `/Users/taheny/vault/teamt/clip-notes`
+- Commit: current feature commit
+- Goal: Include Raindrop.io Unsorted items in the default review queue alongside the configured Inbox collection.
+- Files changed:
+  - `scripts/raindrop_api.py` — includes Unsorted by default for `inbox` and accepts Unsorted items for `process`.
+  - `tests/test_raindrop_api.py` — adds coverage for Unsorted system collection labeling and combined item ordering/deduping.
+  - `.env.example` — adds `RAINDROP_INCLUDE_UNSORTED=true`.
+  - `SKILL.md`, `README.md`, `docs/*.md`, and `references/*.md` — document Inbox plus Unsorted as the standard queue and `--no-unsorted` as the override.
+- Decisions:
+  - Keep `--limit` as a combined output limit across Inbox and Unsorted.
+  - Include Unsorted by default because Raindrop's default uncategorized save path is a natural intake queue.
+  - Provide `RAINDROP_INCLUDE_UNSORTED=false` and `--no-unsorted` for users who want only the named Inbox collection.
+- Validation:
+  - `python3 -m py_compile scripts/*.py` — passed.
+  - `python3 -m unittest tests/test_raindrop_api.py` — passed, 8 tests.
+  - `python3 scripts/raindrop_api.py inbox --help` — passed.
+  - `python3 scripts/raindrop_api.py process --help` — passed.
+  - `git diff --check` — passed.
+  - `rg -n "[ \t]+$" .env.example README.md SKILL.md docs references scripts tests devlog` — no trailing whitespace matches.
+- Review:
+  - Final diff review completed.
+- Follow-ups:
+  - Exercise against a real Raindrop account with both Inbox and Unsorted test items.

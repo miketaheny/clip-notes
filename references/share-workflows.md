@@ -45,9 +45,9 @@ Recommended path:
 
 Recommended path:
 
-1. Save candidate links to a Raindrop.io collection named `Inbox`, or configure `RAINDROP_INBOX_COLLECTION` with the collection name or ID.
+1. Save candidate links to a Raindrop.io collection named `Inbox`, leave them in Unsorted, or configure `RAINDROP_INBOX_COLLECTION` with another collection name or ID.
 2. Copy `.env.example` to `.env` and set `RAINDROP_ACCESS_TOKEN`, or export `RAINDROP_ACCESS_TOKEN` / `RAINDROP_TOKEN` in the local shell environment.
-3. Ask Codex to use `$clip-notes` to review the Raindrop Inbox.
+3. Ask Codex to use `$clip-notes` to review Raindrop Inbox and Unsorted.
 4. Let Codex summarize one source, save and verify the Apple Note, then process the matching raindrop into `Processed` with the same canonical tags.
 
 If the Processed collection has a different name or ID, configure `RAINDROP_PROCESSED_COLLECTION`.

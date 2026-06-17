@@ -24,10 +24,10 @@ The skill is local-first. It summarizes content the user provided or authorized,
 - Python 3 for the helper scripts.
 - `osascript` access to Apple Notes.
 - Optional: `yt-dlp` on `PATH` for media caption extraction.
-- Optional: `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN` for Raindrop.io Inbox processing.
+- Optional: `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN` for Raindrop.io Inbox and Unsorted processing.
 
 Apple Notes defaults are `--account iCloud` and `--folder clip-notes`.
-Raindrop defaults are collections named `Inbox` and `Processed`.
+Raindrop defaults are review sources named `Inbox` and `Unsorted`, with completed items moved to `Processed`.
 
 For Raindrop setup:
 
@@ -76,7 +76,7 @@ Extract metadata and captions for a supported media URL:
 python3 scripts/extract_media_captions.py "https://example.com/video"
 ```
 
-List Raindrop Inbox bookmarks:
+List Raindrop Inbox and Unsorted bookmarks:
 
 ```bash
 python3 scripts/raindrop_api.py inbox --limit 5
@@ -88,7 +88,7 @@ After a matching Apple Note is saved and verified, move a raindrop to Processed 
 python3 scripts/raindrop_api.py process --id 12345 --tags "#clip-notes #reference #ai"
 ```
 
-Recommended recurring use: save links to Raindrop Inbox throughout the day, then have Codex process a small batch on demand or on a Codex recurring automation. Codex should create and verify each Apple Note before running the Raindrop `process` command.
+Recommended recurring use: save links to Raindrop Inbox or leave them in Unsorted throughout the day, then have Codex process a small batch on demand or on a Codex recurring automation. Codex should create and verify each Apple Note before running the Raindrop `process` command.
 
 Run the current lightweight syntax check:
 
@@ -106,7 +106,7 @@ python3 -m unittest tests/test_raindrop_api.py
 5. Create a compact HTML note using the template in `SKILL.md`.
 6. Save the note with `scripts/save_to_apple_notes.py save`.
 7. Verify the saved note with `scripts/save_to_apple_notes.py verify`.
-8. For Raindrop Inbox sources, process the raindrop only after verification succeeds.
+8. For Raindrop Inbox or Unsorted sources, process the raindrop only after verification succeeds.
 
 For source-specific tactics, read `references/source-strategies.md`. For user-facing sharing patterns, read `references/share-workflows.md`.
 

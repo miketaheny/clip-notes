@@ -18,8 +18,14 @@ from typing import Any
 DEFAULT_BASE_URL = "https://api.raindrop.io/rest/v1"
 DEFAULT_INBOX = "Inbox"
 DEFAULT_PROCESSED = "Processed"
+UNSORTED_COLLECTION_ID = -1
 TOKEN_ENV_NAMES = ("RAINDROP_ACCESS_TOKEN", "RAINDROP_TOKEN")
 ENV_KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+SYSTEM_COLLECTION_TITLES = {
+    0: "All",
+    UNSORTED_COLLECTION_ID: "Unsorted",
+    -99: "Trash",
+}
 
 
 class RaindropApiError(Exception):
@@ -84,6 +90,26 @@ def is_int_string(value: str) -> bool:
     return True
 
 
+def env_flag(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().casefold() not in {"0", "false", "no", "off"}
+
+
+def should_include_unsorted(args: argparse.Namespace) -> bool:
+    if args.no_unsorted:
+        return False
+    return env_flag("RAINDROP_INCLUDE_UNSORTED", True)
+
+
+def system_collection(collection_id: int) -> dict[str, Any]:
+    return {
+        "_id": collection_id,
+        "title": SYSTEM_COLLECTION_TITLES.get(collection_id, str(collection_id)),
+    }
+
+
 def normalize_tag(tag: str, keep_hash: bool = False) -> str:
     cleaned = tag.strip().strip(",")
     if not keep_hash and cleaned.startswith("#"):
@@ -129,6 +155,31 @@ def compact_raindrop(item: dict[str, Any]) -> dict[str, Any]:
         "created": item.get("created"),
         "collection_id": collection.get("$id"),
     }
+
+
+def collection_summary(collection: dict[str, Any]) -> dict[str, Any]:
+    return {"id": collection.get("_id"), "title": collection.get("title")}
+
+
+def combine_raindrops(
+    batches: list[list[dict[str, Any]]],
+    *,
+    limit: int,
+    sort: str,
+) -> list[dict[str, Any]]:
+    seen: set[Any] = set()
+    items: list[dict[str, Any]] = []
+    for batch in batches:
+        for item in batch:
+            item_id = item.get("_id")
+            if item_id in seen:
+                continue
+            seen.add(item_id)
+            items.append(item)
+
+    if sort in {"-created", "created"}:
+        items.sort(key=lambda item: str(item.get("created") or ""), reverse=sort == "-created")
+    return items[:limit]
 
 
 class RaindropClient:
@@ -205,7 +256,7 @@ class RaindropClient:
         create_if_missing: bool = False,
     ) -> dict[str, Any]:
         if is_int_string(identifier):
-            return {"_id": int(identifier), "title": identifier}
+            return system_collection(int(identifier))
 
         collections = self.collections()
         matches = [
@@ -281,20 +332,51 @@ def handle_collections(args: argparse.Namespace) -> dict[str, Any]:
     return {"collections": collections}
 
 
+def review_collections(
+    client: RaindropClient,
+    args: argparse.Namespace,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    inbox_name = args.inbox or os.environ.get("RAINDROP_INBOX_COLLECTION", DEFAULT_INBOX)
+    include_unsorted = should_include_unsorted(args)
+    warnings: list[str] = []
+    collections: list[dict[str, Any]] = []
+
+    try:
+        collections.append(client.resolve_collection(inbox_name))
+    except RaindropApiError as error:
+        if not include_unsorted:
+            raise
+        warnings.append(str(error))
+
+    if include_unsorted and not any(
+        collection.get("_id") == UNSORTED_COLLECTION_ID for collection in collections
+    ):
+        collections.append(system_collection(UNSORTED_COLLECTION_ID))
+
+    if not collections:
+        raise RaindropApiError("No review collections resolved.")
+    return collections, warnings
+
+
 def handle_inbox(args: argparse.Namespace) -> dict[str, Any]:
     client = build_client(args)
-    inbox_name = args.inbox or os.environ.get("RAINDROP_INBOX_COLLECTION", DEFAULT_INBOX)
-    inbox = client.resolve_collection(inbox_name)
-    items = client.raindrops(
-        int(inbox["_id"]),
-        page=args.page,
-        perpage=args.limit,
-        sort=args.sort,
-        search=args.search,
-        nested=args.nested,
-    )
+    collections, warnings = review_collections(client, args)
+    batches = [
+        client.raindrops(
+            int(collection["_id"]),
+            page=args.page,
+            perpage=args.limit,
+            sort=args.sort,
+            search=args.search,
+            nested=args.nested,
+        )
+        for collection in collections
+    ]
+    items = combine_raindrops(batches, limit=args.limit, sort=args.sort)
     return {
-        "collection": {"id": inbox.get("_id"), "title": inbox.get("title")},
+        "collection": collection_summary(collections[0]),
+        "collections": [collection_summary(collection) for collection in collections],
+        "warnings": warnings,
         "items": [compact_raindrop(item) for item in items],
     }
 
@@ -304,14 +386,18 @@ def handle_process(args: argparse.Namespace) -> dict[str, Any]:
     raindrop = client.raindrop(args.id)
     original = compact_raindrop(raindrop)
 
-    inbox_name = args.inbox or os.environ.get("RAINDROP_INBOX_COLLECTION", DEFAULT_INBOX)
     processed_name = args.processed or os.environ.get("RAINDROP_PROCESSED_COLLECTION", DEFAULT_PROCESSED)
-    inbox = client.resolve_collection(inbox_name)
+    source_collections, warnings = review_collections(client, args)
+    source_ids = {collection.get("_id") for collection in source_collections}
     current_collection_id = original.get("collection_id")
-    if not args.skip_inbox_check and current_collection_id != inbox.get("_id"):
+    if not args.skip_inbox_check and current_collection_id not in source_ids:
+        source_text = ", ".join(
+            f"{collection.get('title')} ({collection.get('_id')})"
+            for collection in source_collections
+        )
         raise RaindropApiError(
             f"Raindrop {args.id} is in collection {current_collection_id}, "
-            f"not Inbox collection {inbox.get('_id')}. Pass --skip-inbox-check to override."
+            f"not a review collection: {source_text}. Pass --skip-inbox-check to override."
         )
 
     processed = client.resolve_collection(
@@ -337,12 +423,14 @@ def handle_process(args: argparse.Namespace) -> dict[str, Any]:
             "from": current_collection_id,
             "to": processed.get("_id"),
             "to_title": processed.get("title"),
+            "review_sources": [collection_summary(collection) for collection in source_collections],
         },
         "tags": {
             "existing": existing_tags,
             "added": added_tags,
             "final": final_tags,
         },
+        "warnings": warnings,
     }
     if args.dry_run:
         result["update_body"] = update_body
@@ -373,8 +461,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("collections", help="List collection IDs and titles.")
 
-    inbox_parser = subparsers.add_parser("inbox", help="List raindrops from the Inbox collection.")
+    inbox_parser = subparsers.add_parser("inbox", help="List raindrops from Inbox and Unsorted.")
     inbox_parser.add_argument("--inbox", help=f"Inbox collection name or ID. Default: {DEFAULT_INBOX}.")
+    inbox_parser.add_argument(
+        "--no-unsorted",
+        action="store_true",
+        help="Do not include Raindrop's Unsorted system collection.",
+    )
     inbox_parser.add_argument("--limit", type=int, default=10, help="Number of items to fetch. Max 50.")
     inbox_parser.add_argument("--page", type=int, default=0)
     inbox_parser.add_argument("--sort", default="-created")
@@ -383,10 +476,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     process_parser = subparsers.add_parser(
         "process",
-        help="Move one Inbox raindrop to Processed and add the Apple Note tags.",
+        help="Move one Inbox or Unsorted raindrop to Processed and add the Apple Note tags.",
     )
     process_parser.add_argument("--id", type=int, required=True, help="Raindrop ID to process.")
     process_parser.add_argument("--inbox", help=f"Inbox collection name or ID. Default: {DEFAULT_INBOX}.")
+    process_parser.add_argument(
+        "--no-unsorted",
+        action="store_true",
+        help="Do not allow Raindrop's Unsorted system collection as a review source.",
+    )
     process_parser.add_argument(
         "--processed",
         help=f"Processed collection name or ID. Default: {DEFAULT_PROCESSED}.",
@@ -399,7 +497,7 @@ def build_parser() -> argparse.ArgumentParser:
     process_parser.add_argument(
         "--skip-inbox-check",
         action="store_true",
-        help="Allow processing a raindrop that is not currently in the Inbox collection.",
+        help="Allow processing a raindrop that is not currently in a review collection.",
     )
     process_parser.add_argument(
         "--tags",

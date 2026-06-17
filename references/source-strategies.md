@@ -24,9 +24,9 @@ Use these tactics only as needed for edge cases.
 - For long threads, summarize the arc and keep only the most useful claims/examples.
 - Avoid treating engagement metrics as stable facts unless the user asks for them.
 
-## Raindrop.io Inbox
+## Raindrop.io Inbox and Unsorted
 
-- Use `scripts/raindrop_api.py inbox` to list candidates from the configured Inbox collection.
+- Use `scripts/raindrop_api.py inbox` to list candidates from the configured Inbox collection and Raindrop's Unsorted system collection.
 - Treat the raindrop title, link, excerpt, note, tags, domain, and creation date as source metadata.
 - Use the linked source content when accessible. If only Raindrop metadata is available, say that in the note limitations.
 - Save and verify the Apple Note before changing the raindrop.

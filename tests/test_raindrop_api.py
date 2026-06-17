@@ -45,6 +45,26 @@ class RaindropApiTests(unittest.TestCase):
         self.assertEqual(compact["collection_id"], 456)
         self.assertEqual(compact["tags"], ["clip-notes"])
 
+    def test_system_collection_labels_unsorted(self):
+        self.assertEqual(
+            raindrop_api.system_collection(raindrop_api.UNSORTED_COLLECTION_ID),
+            {"_id": -1, "title": "Unsorted"},
+        )
+
+    def test_combine_raindrops_dedupes_sorts_and_limits(self):
+        combined = raindrop_api.combine_raindrops(
+            [
+                [{"_id": 1, "created": "2026-06-15T00:00:00Z"}],
+                [
+                    {"_id": 2, "created": "2026-06-17T00:00:00Z"},
+                    {"_id": 1, "created": "2026-06-15T00:00:00Z"},
+                ],
+            ],
+            limit=2,
+            sort="-created",
+        )
+        self.assertEqual([item["_id"] for item in combined], [2, 1])
+
     def test_parse_env_line_supports_basic_dotenv_syntax(self):
         self.assertEqual(
             raindrop_api.parse_env_line('export RAINDROP_ACCESS_TOKEN="abc123"'),

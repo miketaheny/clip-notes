@@ -43,7 +43,7 @@ Update docs when any of these change:
 - Skill invocation rules, note template, lifecycle values, categories, tags, or done criteria.
 - Apple Notes helper commands, defaults, AppleScript behavior, or spacing normalization.
 - Media extraction behavior, output paths, dependency assumptions, or transcript cleaning.
-- Raindrop API helper commands, token environment variables, `.env` loading, collection defaults, or processing rules.
+- Raindrop API helper commands, token environment variables, `.env` loading, collection defaults, Unsorted inclusion, or processing rules.
 - Recurring Codex automation prompts or Apple Shortcut handoff guidance.
 - Source-specific privacy or fallback rules.
 - Installation, packaging, release, or distribution process.

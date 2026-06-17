@@ -6,7 +6,7 @@ This project has no graphical app UI. Visual documentation should focus on the s
 
 | Location | Format | Purpose |
 | --- | --- | --- |
-| `docs/ARCHITECTURE.md` | Mermaid flowchart | Shows how a shared source becomes an Apple Note and optionally moves from Raindrop Inbox to Processed. |
+| `docs/ARCHITECTURE.md` | Mermaid flowchart | Shows how a shared source becomes an Apple Note and optionally moves from Raindrop Inbox or Unsorted to Processed. |
 
 ## Recommended Screenshot Set
 
@@ -17,7 +17,7 @@ Capture these when a real end-to-end run is available:
 | Apple Notes `clip-notes` folder | Shows where saved notes land. |
 | A finished clip note | Demonstrates metadata, tags, summary, action items, and limitations. |
 | macOS Codex invocation | Shows the expected desktop workflow. |
-| Raindrop Inbox and Processed collections | Shows the before/after state for processed bookmarks without exposing private source content. |
+| Raindrop Inbox, Unsorted, and Processed collections | Shows the before/after state for processed bookmarks without exposing private source content. |
 | iOS Share Sheet handoff | Shows how mobile capture can feed Clip Notes or ChatGPT. |
 
 Store screenshots under `docs/assets/` if they are added. Do not include private source text in screenshots unless the user explicitly approves it.
@@ -36,7 +36,7 @@ A short demo can cover:
 
 Keep the demo under two minutes and use a non-sensitive public source.
 
-For recurring use, capture a second short demo that starts from a populated Raindrop Inbox, processes one item through Codex, then shows the item in Processed and the matching Apple Note.
+For recurring use, capture a second short demo that starts from populated Raindrop Inbox and Unsorted views, processes one item through Codex, then shows the item in Processed and the matching Apple Note.
 
 ## User Journey Diagram
 

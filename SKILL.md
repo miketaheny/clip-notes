@@ -15,7 +15,7 @@ Create concise, source-grounded notes from shareable content and save them to Ap
 - Searchability: include a metadata block with lifecycle, category, tags, and a short "why keep this" reason.
 - Verification: always confirm the target folder exists and read back the note title after saving.
 - Privacy: use local/shared content first. Do not broaden to internet search for private email, documents, or account-gated content unless the user explicitly asks.
-- Raindrop Inbox: when reviewing a Raindrop.io Inbox bookmark, move it to the processed collection and apply the same note tag names only after the Apple Note has been saved and verified.
+- Raindrop Inbox: when reviewing a Raindrop.io Inbox or Unsorted bookmark, move it to the processed collection and apply the same note tag names only after the Apple Note has been saved and verified.
 
 ## Workflow
 
@@ -41,15 +41,15 @@ Read `references/source-strategies.md` when handling a source type with edge cas
 
 ## Raindrop Inbox Workflow
 
-Use the direct Raindrop.io REST API for free-account compatible Inbox review. The helper auto-loads `.env` when present, then reads the API token from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`. It defaults to collections named `Inbox` and `Processed`; override with `RAINDROP_INBOX_COLLECTION`, `RAINDROP_PROCESSED_COLLECTION`, `--inbox`, or `--processed`. Collection IDs are accepted, so `--inbox -1` can be used if the user's intake flow uses Raindrop's Unsorted system collection.
+Use the direct Raindrop.io REST API for free-account compatible Inbox review. The helper auto-loads `.env` when present, then reads the API token from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`. It defaults to a review queue made from the collection named `Inbox` plus Raindrop's Unsorted system collection, and moves completed items to `Processed`. Override with `RAINDROP_INBOX_COLLECTION`, `RAINDROP_PROCESSED_COLLECTION`, `--inbox`, or `--processed`. Disable Unsorted with `RAINDROP_INCLUDE_UNSORTED=false` or `--no-unsorted`.
 
-List Inbox candidates:
+List Inbox and Unsorted candidates:
 
 ```bash
 python3 scripts/raindrop_api.py inbox --limit 5
 ```
 
-Use each raindrop's link, title, excerpt, note, and existing tags as source metadata. Extract the linked source content using the normal source strategies. If the source is gated or inaccessible, save a limitation note instead of fabricating details.
+Use each raindrop's link, title, excerpt, note, existing tags, and collection as source metadata. Extract the linked source content using the normal source strategies. If the source is gated or inaccessible, save a limitation note instead of fabricating details.
 
 After the Apple Note is saved and verified, move the raindrop to the processed collection and apply the same canonical note tags:
 
@@ -171,5 +171,5 @@ For local setup, copy `.env.example` to `.env` and fill `RAINDROP_ACCESS_TOKEN`.
 
 - The note exists in Apple Notes under `clip-notes`.
 - The final response names the created note and mentions any extraction limitations.
-- For Raindrop Inbox sources, the raindrop is moved to the processed collection and tagged with the same canonical tags as the Apple Note, or it is explicitly left in Inbox because saving or verification failed.
+- For Raindrop Inbox or Unsorted sources, the raindrop is moved to the processed collection and tagged with the same canonical tags as the Apple Note, or it is explicitly left in place because saving or verification failed.
 - If saving to Apple Notes was impossible, a user-facing HTML or Markdown note file exists and the final response explains the blocker.

@@ -11,7 +11,7 @@ Clip Notes is a small local Agent Skill. The canonical behavior lives in `SKILL.
 | Share workflow guide | `references/share-workflows.md` | Explains expected usage from Codex, ChatGPT, iOS, and macOS sharing surfaces. |
 | Apple Notes helper | `scripts/save_to_apple_notes.py` | Wraps AppleScript commands for folder creation, save, verify, move, list, and spacing restyle operations. |
 | Media captions helper | `scripts/extract_media_captions.py` | Uses `yt-dlp` to write media metadata and caption-derived transcripts under `work/clip-notes-media`. |
-| Raindrop API helper | `scripts/raindrop_api.py` | Uses the Raindrop.io REST API to list Inbox bookmarks and move processed bookmarks with matching note tags. |
+| Raindrop API helper | `scripts/raindrop_api.py` | Uses the Raindrop.io REST API to list Inbox and Unsorted bookmarks and move processed bookmarks with matching note tags. |
 | Agent display metadata | `agents/openai.yaml` | Provides display name, short description, and default prompt. |
 
 ## Source-to-Note Flow
@@ -64,12 +64,12 @@ The default output directory is `work/clip-notes-media`, which is ignored by Git
 
 ## Raindrop API Boundary
 
-`scripts/raindrop_api.py` uses the official REST API base URL `https://api.raindrop.io/rest/v1`. It reads a bearer token from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`, lists raindrops from an Inbox collection, and updates a processed raindrop with:
+`scripts/raindrop_api.py` uses the official REST API base URL `https://api.raindrop.io/rest/v1`. It reads a bearer token from `RAINDROP_ACCESS_TOKEN` or `RAINDROP_TOKEN`, lists raindrops from an Inbox collection and Raindrop's Unsorted system collection by default, and updates a processed raindrop with:
 
 - `tags`: the existing tags plus canonical Apple Note tag names.
 - `collection`: `{"$id": <processed_collection_id>}`.
 
-The helper defaults to collections named `Inbox` and `Processed`, with environment and CLI overrides for collection names or IDs. It does not call the Raindrop.io MCP endpoint.
+The helper defaults to review sources named `Inbox` and `Unsorted`, then moves completed items to `Processed`, with environment and CLI overrides for collection names or IDs. It does not call the Raindrop.io MCP endpoint.
 
 ## Data and Trust Boundaries
 
